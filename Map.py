@@ -29,9 +29,8 @@ class Map:
                 if self.table[i][j] == 1:
                     if count < 2 or count > 3:
                         temp_map[i][j] = 0
-                else:
-                    if count == 3:
-                        temp_map[i][j] = 1
+                elif count == 3:
+                    temp_map[i][j] = 1
         self.table = temp_map
 
     def flip_cell(self, row, column):
