@@ -5,76 +5,87 @@ import pygame.freetype
 
 from Map import Map
 
-WIDTH = 800
-HEIGHT = 600
+MaxBlockSize = 50
+MaxWindowHeight = 720
+MaxWindowWidth = 1280
 COLOR_ALIVE = (228, 186, 186)
 COLOR_DEAD = (158, 158, 158)
 COLOR_BG = (255, 255, 255)
 
-
 class UI:
     def __init__(self, _map: Map, _title, _blocksize=100):
-        self.BlockSize = HEIGHT / _map.Height
-        self.WindowHeight = HEIGHT
-        self.WindowWidth = WIDTH
+
+        self.isPause = False
         self.CurMap = _map
+        self.TextWidth = 160
+        temp_size = min((MaxWindowWidth - self.TextWidth) / self.CurMap.Width, MaxWindowHeight / self.CurMap.Height)
+        self.BlockSize = int(min(temp_size, MaxBlockSize))
+        self.WindowWidth = self.BlockSize * self.CurMap.Width + self.TextWidth
+        self.WindowHeight = self.BlockSize * self.CurMap.Height
         pygame.init()
         self.screen = pygame.display.set_mode((self.WindowWidth, self.WindowHeight))
         self.screen.fill(COLOR_BG)
         pygame.display.set_caption(_title)
         self.IsPlaying = True
-        self.FPS = 1
+        self._10timesFPS = 16
         self.Clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont('microsoft Yahei', 15)
         self.font = pygame.freetype.SysFont('microsoft Yahei', 15)
 
     def updateText(self):
-        self.screen.fill(COLOR_BG, (HEIGHT, 0, WIDTH - HEIGHT, HEIGHT))
+        self.screen.fill(COLOR_BG, (self.WindowWidth - self.TextWidth, 0, self.TextWidth, self.WindowHeight))
         pygame.display.flip()
-        text_fps, __ = self.font.render('当前FPS: ' + str(self.FPS), (25, 25, 25))
-        text_help, __ = self.font.render('j:减速, k:加速, s:暂停', (25, 25, 25))
-        [self.screen.blit(text, (25 + HEIGHT, 25 + index * 40)) for (index, text) in
-         enumerate([text_fps, text_help])]
+        text_fps = self.font.render('当前FPS: ' + str(self._10timesFPS/10), (25, 25, 25))[0]
+        text_key_j = self.font.render('J:减速', (25, 25, 25))[0]
+        text_key_k = self.font.render('K:加速', (25, 25, 25))[0]
+        text_key_s = self.font.render('S:暂停' if not self.isPause else 'S:运行', (25, 25, 25))[0]
+        text_key_d = self.font.render('D:下一帧',(25,25,25))[0]
+
+        textlist = [text_fps, text_key_j, text_key_k, text_key_s]
+
+        if self.isPause:
+            textlist.append(text_key_d)
+
+        [self.screen.blit(text, (25 + self.WindowWidth - self.TextWidth, 25 + index * 40)) for index, text in
+         enumerate(textlist)]
 
     def play(self):
         count = 0
-        pause_flg = False
         self.updateText()
         while self.IsPlaying:
             # 计数器实现游戏速度调整
             count += 1
-            if count >= 120 / self.FPS and not pause_flg:
+            if count >= 512 / self._10timesFPS and not self.isPause:
                 count = 0
                 self.CurMap.Update()
+
             for i in range(0, self.CurMap.Height):
                 for j in range(0, self.CurMap.Width):
                     pygame.draw.rect(self.screen,
                                      COLOR_ALIVE if self.CurMap.table[i + 1][j + 1] == 1 else COLOR_DEAD,
                                      (j * self.BlockSize, i * self.BlockSize, self.BlockSize, self.BlockSize),
-                                     border_radius=2)
+                                     border_radius = 2)
 
-            self.Clock.tick(120)
+            self.Clock.tick(51.2)
             pygame.display.update()
             for event in pygame.event.get():
+
                 if event.type == pygame.QUIT:
                     self.IsPlaying = False
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_j:
-                        if 0.3 < self.FPS <= 2:
-                            self.FPS = round(self.FPS - 0.2, 2)
-                        elif self.FPS > 2:
-                            self.FPS = round(self.FPS - 1, 2)
-                    if event.key == pygame.K_k:
-                        if 0.2 <= self.FPS < 2:
-                            self.FPS = round(self.FPS + 0.2, 2)
-                        elif 2 <= self.FPS < 120:
-                            self.FPS = round(self.FPS + 1, 2)
-                    self.updateText()
+                    if event.key == pygame.K_j and self._10timesFPS > 1:
+                        self._10timesFPS = round(self._10timesFPS / 2)
+                    if event.key == pygame.K_k and self._10timesFPS < 512:
+                        self._10timesFPS = round(self._10timesFPS * 2)
                     if event.key == pygame.K_s:
-                        pause_flg = not pause_flg
+                        self.isPause = not self.isPause
+                    if event.key == pygame.K_d and self.isPause:
+                        self.CurMap.Update()
+
+                    self.updateText()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
-                    if pos[0] <= 600:
+                    if pos[0] <= self.CurMap.Width * self.BlockSize \
+                            and pos[1] <= self.CurMap.Height * self.BlockSize:
                         column = int(pos[0] / self.BlockSize)
                         row = int(pos[1] / self.BlockSize)
                         self.CurMap.flip_cell(row, column)
