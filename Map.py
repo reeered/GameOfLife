@@ -1,37 +1,50 @@
-import copy
-
-
 class Map:
-    def __init__(self, _table):
-        height = len(_table)
-        width = len(_table[0])
+
+    def __init__(self, _table: list):
+        self.height = len(_table)
+        self.width = len(_table[0])
         self.table = []
-        self.table.append([0 for _ in range(width + 2)])
+        self.table.append([0 for _ in range(self.width + 2)])
         for item in _table:
             temp_row = [0]
             temp_row.extend(item)
             temp_row.append(0)
             self.table.append(temp_row)
-        self.table.append([0 for _ in range(width + 2)])
-        self.Height = height
-        self.Width = width
+        self.table.append([0 for _ in range(self.width + 2)])
 
     def Update(self):
-        H = self.Height
-        W = self.Width
-        bias = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
-        temp_map = copy.deepcopy(self.table)
-        for i in range(1, H + 1):
-            for j in range(1, W + 1):
-                count = 0
-                for xx, yy in bias:
-                    count = count + self.table[i + xx][j + yy]
-                if self.table[i][j] == 1:
-                    if count < 2 or count > 3:
-                        temp_map[i][j] = 0
-                elif count == 3:
-                    temp_map[i][j] = 1
-        self.table = temp_map
+        count = self.get_neighbor_count_map()
+        for i in range(self.height):
+            for j in range(self.width):
+                if self.table[i+1][j+1] == 1:
+                    if count[i][j] < 2 or count[i][j] > 3:
+                        self.table[i+1][j+1] = 0
+                elif count[i][j] == 3:
+                    self.table[i+1][j+1] = 1
 
-    def flip_cell(self, row, column):
-        self.table[row + 1][column + 1] = not self.table[row + 1][column + 1]
+    def flip_cell(self, row: int, column: int):
+        self.table[row+1][column+1] = not self.table[row+1][column+1]
+
+    def get_neighbor_count_map(self):
+        count = [[0 for _ in range(self.width)]for _ in range(self.height)]
+        bias = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
+        for i in range(self.height):
+            for j in range(self.width):
+                for xx, yy in bias:
+                    count[i][j] = count[i][j] + self.table[i + 1 + xx][j + 1 + yy]
+        return count
+
+    def get_cell(self, row: int, col: int):
+        if 0 <= row <= self.height and 0 <= col <= self.width:
+            return self.table[row+1][col+1]
+        else:
+            raise ValueError('Invalid row or col')
+
+    def set_cell(self, row: int, col: int, state: int):
+        if 0 < row < self.height and 0 < col < self.width:
+            if state not in [0, 1]:
+                raise ValueError('State should be zero or one')
+            self.table[row + 1][col + 1] = state
+        else:
+            raise ValueError('Invalid row or col')
+

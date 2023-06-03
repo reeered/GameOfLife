@@ -12,16 +12,16 @@ COLOR_ALIVE = (228, 186, 186)
 COLOR_DEAD = (158, 158, 158)
 COLOR_BG = (255, 255, 255)
 
-class UI:
-    def __init__(self, _map: Map, _title, _blocksize=100):
 
+class UI:
+    def __init__(self, _map: Map, _title: str, _blocksize: int = 100):
         self.isPause = False
         self.CurMap = _map
         self.TextWidth = 160
-        temp_size = min((MaxWindowWidth - self.TextWidth) / self.CurMap.Width, MaxWindowHeight / self.CurMap.Height)
+        temp_size = min((MaxWindowWidth - self.TextWidth) / self.CurMap.width, MaxWindowHeight / self.CurMap.height)
         self.BlockSize = int(min(temp_size, MaxBlockSize))
-        self.WindowWidth = self.BlockSize * self.CurMap.Width + self.TextWidth
-        self.WindowHeight = self.BlockSize * self.CurMap.Height
+        self.WindowWidth = self.BlockSize * self.CurMap.width + self.TextWidth
+        self.WindowHeight = self.BlockSize * self.CurMap.height
         pygame.init()
         self.screen = pygame.display.set_mode((self.WindowWidth, self.WindowHeight))
         self.screen.fill(COLOR_BG)
@@ -58,14 +58,14 @@ class UI:
                 count = 0
                 self.CurMap.Update()
 
-            for i in range(0, self.CurMap.Height):
-                for j in range(0, self.CurMap.Width):
+            for i in range(0, self.CurMap.height):
+                for j in range(0, self.CurMap.width):
                     pygame.draw.rect(self.screen,
                                      COLOR_ALIVE if self.CurMap.table[i + 1][j + 1] == 1 else COLOR_DEAD,
                                      (j * self.BlockSize, i * self.BlockSize, self.BlockSize, self.BlockSize),
                                      border_radius = 2)
 
-            self.Clock.tick(51.2)
+            self.Clock.tick(51)
             pygame.display.update()
             for event in pygame.event.get():
 
@@ -84,13 +84,8 @@ class UI:
                     self.updateText()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
-                    if pos[0] <= self.CurMap.Width * self.BlockSize \
-                            and pos[1] <= self.CurMap.Height * self.BlockSize:
+                    if pos[0] <= self.CurMap.width * self.BlockSize \
+                            and pos[1] <= self.CurMap.height * self.BlockSize:
                         column = int(pos[0] / self.BlockSize)
                         row = int(pos[1] / self.BlockSize)
                         self.CurMap.flip_cell(row, column)
-
-
-game_map = Map([[random.choice([0, 1]) for i in range(30)] for j in range(30)])
-GameUI = UI(game_map, "Game Of Life")
-GameUI.play()
