@@ -92,8 +92,3 @@ class UI:
                         column = int(pos[0] / self.BlockSize)
                         row = int(pos[1] / self.BlockSize)
                         self.CurMap.flip_cell(row, column)
-
-
-game_map = Map([[random.choice([0, 1]) for i in range(30)] for j in range(30)])
-GameUI = UI(game_map, "Game Of Life")
-GameUI.play()
