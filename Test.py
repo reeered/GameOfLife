@@ -1,6 +1,5 @@
-import random
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from Map import Map
 

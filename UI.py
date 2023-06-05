@@ -5,9 +5,9 @@ import pygame.freetype
 
 from Map import Map
 
-MaxBlockSize = 50
-MaxWindowHeight = 720
-MaxWindowWidth = 1280
+MAX_BLOCK_SIZE = 50
+MAX_WINDOW_HEIGHT = 600
+MAX_WINDOW_WIDTH = 1280
 COLOR_ALIVE = (228, 186, 186)
 COLOR_DEAD = (158, 158, 158)
 COLOR_BG = (255, 255, 255)
@@ -18,8 +18,8 @@ class UI:
         self.isPause = False
         self.CurMap = _map
         self.TextWidth = 160
-        temp_size = min((MaxWindowWidth - self.TextWidth) / self.CurMap.width, MaxWindowHeight / self.CurMap.height)
-        self.BlockSize = int(min(temp_size, MaxBlockSize))
+        temp_size = min((MAX_WINDOW_WIDTH - self.TextWidth) / self.CurMap.width, MAX_WINDOW_HEIGHT / self.CurMap.height)
+        self.BlockSize = int(min(temp_size, MAX_BLOCK_SIZE))
         self.WindowWidth = self.BlockSize * self.CurMap.width + self.TextWidth
         self.WindowHeight = self.BlockSize * self.CurMap.height
         pygame.init()
